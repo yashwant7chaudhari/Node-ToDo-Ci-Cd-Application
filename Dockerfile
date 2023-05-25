@@ -1,7 +1,14 @@
-FROM node:12.2.0-alpine
-WORKDIR app
-COPY . .
+#stage1
+
+FROM node:12.2.0-alpine AS build
+WORKDIR /app
+COPY package.json ./
 RUN npm install
-RUN npm run test
-EXPOSE 8000
-CMD ["node","app.js"]
+COPY . /app
+
+#stage2
+
+FROM nginx:stable-alpine
+COPY --from=build /app /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
